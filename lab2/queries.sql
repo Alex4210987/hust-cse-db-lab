@@ -86,11 +86,11 @@ INSERT INTO Course (Cno, Cname, Cpno, Ccredit) VALUES
 ('9', '人工智能', NULL, 4);
 
 -- 查询新插入的课程
-SELECT * FROM Course;
+SELECT * FROM Course WHERE Cname IN ('C语言', '人工智能');
 
 -- 使用 delete 语句把人工智能课程删除，并查询出来
 -- 删除人工智能课程
-DELETE FROM Course WHERE Cno = '9';
+DELETE FROM Course WHERE Cname = '人工智能';
 
 -- 查询删除后的结果
 SELECT * FROM Course;
