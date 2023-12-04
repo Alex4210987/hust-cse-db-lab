@@ -6,5 +6,6 @@ run under mysql on ubuntu23.04
 ## usage
 
 ```bash
-mysql -u lab -p < file.sql
+sudo mysql -u root -p < lab1/init.sql
+mysql -u lab -p < filename.sql
 ```

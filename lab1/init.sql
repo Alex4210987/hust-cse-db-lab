@@ -68,3 +68,11 @@ INSERT INTO SC (Sno, Cno, Grade) VALUES
 ('200215121', '3', 88),
 ('200215122', '2', 90),
 ('200215122', '3', 80);
+
+DROP USER IF EXISTS 'lab'@'localhost';
+
+CREATE USER 'lab'@'localhost' IDENTIFIED BY '';
+
+GRANT ALL PRIVILEGES ON S_T_U2022xxxxx.* TO 'lab'@'localhost';
+
+FLUSH PRIVILEGES;
