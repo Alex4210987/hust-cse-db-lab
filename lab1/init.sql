@@ -75,4 +75,10 @@ CREATE USER 'lab'@'localhost' IDENTIFIED BY '';
 
 GRANT ALL PRIVILEGES ON S_T_U2022xxxxx.* TO 'lab'@'localhost';
 
+GRANT CREATE USER ON *.* TO 'lab'@'localhost';
+
+GRANT GRANT OPTION ON *.* TO 'lab'@'localhost';
+
+GRANT RELOAD ON *.* TO 'lab'@'localhost';
+
 FLUSH PRIVILEGES;

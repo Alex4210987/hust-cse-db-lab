@@ -7,5 +7,6 @@ run under mysql on ubuntu23.04
 
 ```bash
 sudo mysql -u root -p < lab1/init.sql
-mysql -u lab -p < filename.sql
+mysql -u user -p < filename.sql
 ```
+you might need to add `sudo` before `mysql` if you are using root user.
