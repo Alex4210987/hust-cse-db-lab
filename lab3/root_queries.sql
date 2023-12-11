@@ -46,11 +46,13 @@ CALL calculate_cs_course_stats();
 
 -- (13) 定义一个带学号为参数的查看某个学号的所有课程的成绩
 DELIMITER //
-CREATE PROCEDURE view_student_courses(IN sno_param CHAR(9))
+CREATE PROCEDURE view_student_courses(sno_param CHAR(9))
 BEGIN
-    SELECT S_T_U2022xxxxx.Student.Sname, S_T_U2022xxxxx.SC.Cno, S_T_U2022xxxxx.SC.Grade
+    SELECT S_T_U2022xxxxx.Student.Sname, S_T_U2022xxxxx.Student.Sno, S_T_U2022xxxxx.SC.Cno, S_T_U2022xxxxx.Course.Cname, S_T_U2022xxxxx.SC.Grade
     FROM S_T_U2022xxxxx.Student
-    JOIN S_T_U2022xxxxx.SC ON S_T_U2022xxxxx.Student.Sno = sno_param;
+    JOIN  S_T_U2022xxxxx.SC ON S_T_U2022xxxxx.Student.Sno = S_T_U2022xxxxx.SC.Sno
+    JOIN S_T_U2022xxxxx.Course ON S_T_U2022xxxxx.SC.Cno = S_T_U2022xxxxx.Course.Cno
+    WHERE S_T_U2022xxxxx.Student.Sno = sno_param;
 END;
 //
 DELIMITER ;
@@ -58,30 +60,49 @@ DELIMITER ;
 -- 执行存储过程
 CALL view_student_courses('200215121');
 
--- (14) 把上一题改成存储过程
+-- (14) 把上一题改成函数
+-- DELIMITER //
+-- CREATE FUNCTION get_student_courses(sno_param CHAR(9))
+-- RETURNS TABLE (
+--     Sname VARCHAR(255),
+--     Cno INT,
+--     Grade INT
+-- )
+-- DETERMINISTIC
+-- READS SQL DATA
+-- BEGIN
+--     RETURN (
+--         SELECT S_T_U2022xxxxx.Student.Sname, S_T_U2022xxxxx.SC.Cno, S_T_U2022xxxxx.SC.Grade
+--         FROM S_T_U2022xxxxx.Student
+--         JOIN S_T_U2022xxxxx.SC ON S_T_U2022xxxxx.Student.Sno = sno_param
+--     );
+-- END;
+-- //
+-- DELIMITER ;
+
 DELIMITER //
-CREATE PROCEDURE get_student_courses(IN sno_param CHAR(9))
+
+CREATE FUNCTION get_student_courses(sno_param CHAR(9))
+RETURNS VARCHAR(2048)
+DETERMINISTIC
+READS SQL DATA
 BEGIN
-    CREATE TEMPORARY TABLE result_table (
-        Sname CHAR(20),
-        Cno CHAR(4),
-        Grade SMALLINT
-    );
+    DECLARE result VARCHAR(2048);
 
-    INSERT INTO result_table
-    SELECT S_T_U2022xxxxx.Student.Sname, S_T_U2022xxxxx.SC.Cno, S_T_U2022xxxxx.SC.Grade
-    FROM S_T_U2022xxxxx.Student
-    JOIN S_T_U2022xxxxx.SC ON S_T_U2022xxxxx.Student.Sno = sno_param;
+    SELECT GROUP_CONCAT(CONCAT(S.Sno, ' ', S.Sname, ' ', C.Cno, ' ', C.Cname, ' ', SC.Grade) SEPARATOR '; ')
+    INTO result
+    FROM Student S
+    JOIN SC ON S.Sno = SC.Sno
+    JOIN Course C ON SC.Cno = C.Cno
+    WHERE S.Sno = sno_param;
 
-    SELECT * FROM result_table;
-    
-    DROP TEMPORARY TABLE IF EXISTS result_table;
-END;
-//
+    RETURN result;
+END //
+
 DELIMITER ;
 
--- 调用函数
-CALL get_student_courses('200215121');
+-- -- 调用函数
+SELECT get_student_courses('200215121');
 
 -- (15) 在 SC 表上定义一个完整性约束，要求成绩在 0-100 之间
 -- 修改某个学生的成绩为 120，进行查询
