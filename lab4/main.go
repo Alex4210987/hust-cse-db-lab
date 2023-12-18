@@ -17,7 +17,7 @@ var (
 // Student represents the Student model
 type Student struct {
 	Sno         string `gorm:"primaryKey"`
-	Sname       string `gorm:"unique"`
+	Sname       string 
 	Ssex        string
 	Sage        int
 	Sdept       string
@@ -40,12 +40,20 @@ type SC struct {
 }
 
 func initDB() {
+    // Remove existing database file
+    if err := os.Remove("lab4.db"); err != nil && !os.IsNotExist(err) {
+        fmt.Println("Failed to remove existing database file:", err)
+        os.Exit(1)
+    }
+
+    // Create a new database
     db, err = gorm.Open(sqlite.Open("lab4.db"), &gorm.Config{})
     if err != nil {
         fmt.Println("Failed to connect to database:", err)
         os.Exit(1)
     }
 
+    // Auto migrate models
     if err := db.AutoMigrate(&Student{}, &Course{}, &SC{}); err != nil {
         fmt.Println("Failed to migrate database:", err)
         os.Exit(1)
@@ -256,51 +264,92 @@ func alterStudent(sno, sname, ssex string, sage int, sdept, scholarship string) 
 	fmt.Println("Student altered successfully!")
 }
 
+// queryDepartment function
 func queryDepartment(sdept string) {
-	var totalGrade, bestGrade, worstGrade, excellentCount, failCount int
-	var studentCount float64
+    var students []Student
+    db.Where("Sdept = ?", sdept).Find(&students)
 
-	// Calculate the statistics
-	db.Table("students").
-		Select("COALESCE(AVG(grade), 0) AS avg_grade, COALESCE(MAX(grade), 0) AS max_grade, COALESCE(MIN(grade), 0) AS min_grade, "+
-			"COALESCE(SUM(CASE WHEN grade >= 85 THEN 1 ELSE 0 END), 0) AS excellent_count, "+
-			"COALESCE(SUM(CASE WHEN grade < 60 THEN 1 ELSE 0 END), 0) AS fail_count, COUNT(*) AS student_count").
-		Joins("JOIN sc ON students.sno = sc.sno").
-		Where("students.sdept = ?", sdept).
-		Scan(&struct {
-			AvgGrade       float64
-			MaxGrade       int
-			MinGrade       int
-			ExcellentCount int
-			FailCount      int
-			StudentCount   float64
-		}{
-			AvgGrade:       float64(totalGrade),
-			MaxGrade:       bestGrade,
-			MinGrade:       worstGrade,
-			ExcellentCount: excellentCount,
-			FailCount:      failCount,
-			StudentCount:   studentCount,
-		})
+    if len(students) == 0 {
+        fmt.Println("No students found in the department:", sdept)
+        return
+    }
 
-	if studentCount > 0 {
-		excellentRate := (float64(excellentCount) / studentCount) * 100
+    var totalGrade, maxGrade, minGrade, failCount, excellentCount int
+    totalStudents := len(students)
 
-		fmt.Printf("Average Grade: %.2f\n", float64(totalGrade)/studentCount)
-		fmt.Printf("Best Grade: %d\n", bestGrade)
-		fmt.Printf("Worst Grade: %d\n", worstGrade)
-		fmt.Printf("Excellent Rate: %.2f%%\n", excellentRate)
-		fmt.Printf("Fail Count: %d\n", failCount)
-	} else {
-		fmt.Println("No students found in the department.")
-	}
+    for _, student := range students {
+        var sc []SC
+        db.Where("Sno = ?", student.Sno).Find(&sc)
+
+        for _, record := range sc {
+            totalGrade += record.Grade
+
+            if record.Grade > maxGrade {
+                maxGrade = record.Grade
+            }
+
+            if record.Grade < minGrade || minGrade == 0 {
+                minGrade = record.Grade
+            }
+
+            if record.Grade >= 85 {
+                excellentCount++
+            }
+
+            if record.Grade < 60 {
+                failCount++
+            }
+        }
+    }
+
+    averageGrade := float64(totalGrade) / float64(totalStudents)
+    passRate := float64(totalStudents-failCount) / float64(totalStudents) * 100.0
+
+    fmt.Println("Department:", sdept)
+    fmt.Printf("Average Grade: %.2f\n", averageGrade)
+    fmt.Printf("Max Grade: %d\n", maxGrade)
+    fmt.Printf("Min Grade: %d\n", minGrade)
+    fmt.Printf("Pass Rate: %.2f%%\n", passRate)
+    fmt.Printf("Excellent Rate: %.2f%%\n", float64(excellentCount)/float64(totalStudents)*100.0)
+    fmt.Printf("Fail Count: %d\n", failCount)
 }
 
+// queryCourse function
 func queryCourse(cno string) {
-	// Implement your logic to query course
-	// ...
+    var course Course
+    if err := db.Where("Cno = ?", cno).First(&course).Error; err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
 
-	fmt.Println("Query Course not implemented yet!")
+    if course.Cno == "" {
+        fmt.Println("Course not found with ID:", cno)
+        return
+    }
+
+    fmt.Println("Course ID:", course.Cno)
+    fmt.Println("Course Name:", course.Cname)
+    fmt.Println("Prerequisite Course ID:", course.Cpno)
+    fmt.Println("Course Credit:", course.Ccredit)
+
+    var sc []SC
+    db.Where("Cno = ?", cno).Find(&sc)
+
+    if len(sc) == 0 {
+        fmt.Println("No students enrolled in this course.")
+        return
+    }
+
+    fmt.Println("Enrolled Students:")
+    for _, record := range sc {
+        var student Student
+        db.Where("Sno = ?", record.Sno).First(&student)
+
+        fmt.Printf("Student ID: %s\n", student.Sno)
+        fmt.Printf("Student Name: %s\n", student.Sname)
+        fmt.Printf("Grade: %d\n", record.Grade)
+        fmt.Println("--------------")
+    }
 }
 
 func queryStudent(sno string) {
