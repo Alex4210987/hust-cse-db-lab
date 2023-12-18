@@ -40,19 +40,13 @@ type SC struct {
 }
 
 func initDB() {
-    // Remove existing database file
-    if err := os.Remove("lab4.db"); err != nil && !os.IsNotExist(err) {
-        fmt.Println("Failed to remove existing database file:", err)
-        os.Exit(1)
-    }
-
     // Create a new database
     db, err = gorm.Open(sqlite.Open("lab4.db"), &gorm.Config{})
     if err != nil {
         fmt.Println("Failed to connect to database:", err)
         os.Exit(1)
     }
-
+	db = db.Debug()
     // Auto migrate models
     if err := db.AutoMigrate(&Student{}, &Course{}, &SC{}); err != nil {
         fmt.Println("Failed to migrate database:", err)
@@ -60,11 +54,20 @@ func initDB() {
     }
 }
 
+func dropDB() {
+	// Drop database tables
+	if err := db.Migrator().DropTable(&Student{}, &Course{}, &SC{}); err != nil {
+		fmt.Println("Failed to drop database:", err)
+		os.Exit(1)
+	}
+}
+
 func main() {
 	initDB()
 
 	// Command-line flags
 	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
+	dropCmd := flag.NewFlagSet("drop", flag.ExitOnError)
 	addStudentCmd := flag.NewFlagSet("addStudent", flag.ExitOnError)
 	addCourseCmd := flag.NewFlagSet("addCourse", flag.ExitOnError)
 	alterCourseCmd := flag.NewFlagSet("alterCourse", flag.ExitOnError)
@@ -125,6 +128,10 @@ func main() {
 	case "init":
 		initCmd.Parse(os.Args[2:])
 		initDB()
+
+	case "drop":
+		dropCmd.Parse(os.Args[2:])
+		dropDB()
 
 	case "addStudent":
 		addStudentCmd.Parse(os.Args[2:])

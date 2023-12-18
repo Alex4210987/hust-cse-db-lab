@@ -48,6 +48,13 @@ CREATE TABLE SC (
 ```
 init database
 
+###  drop
+
+```bash
+./hust-cse-db-lab drop
+```
+drop tables
+
 ### addStudent
 
 ```bash
