@@ -1,6 +1,6 @@
 # hust-cse-db-lab
 
-a database application run on cmd line
+a database application run on cmd line using go running on ubuntu
 
 ## design
 
