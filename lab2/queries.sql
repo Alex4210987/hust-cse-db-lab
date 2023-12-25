@@ -46,8 +46,8 @@ SELECT SC.Sno, SC.Cno
 FROM SC
 WHERE SC.Grade < (
     SELECT AVG(Grade) - 5
-    FROM SC
-    WHERE SC.Sno = SC.Sno
+    FROM SC as s
+    WHERE SC.Sno = s.Sno
 );
 
 -- 查询比所有男生年龄都小的女生的学号、姓名和年龄
