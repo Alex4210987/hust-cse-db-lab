@@ -1,11 +1,11 @@
 -- 删除已存在的数据库
-DROP DATABASE IF EXISTS S_T_U2022xxxxx;
+DROP DATABASE IF EXISTS  S_T_U2022xxxxx;
 
 -- 创建新的数据库
-CREATE DATABASE S_T_U2022xxxxx;
+CREATE DATABASE  S_T_U2022xxxxx;
 
 -- 切换到新创建的数据库
-USE S_T_U2022xxxxx;
+USE  S_T_U2022xxxxx;
 
 -- 创建学生表 Student
 CREATE TABLE Student (
@@ -73,7 +73,7 @@ DROP USER IF EXISTS 'lab'@'localhost';
 
 CREATE USER 'lab'@'localhost' IDENTIFIED BY '';
 
-GRANT ALL PRIVILEGES ON S_T_U2022xxxxx.* TO 'lab'@'localhost';
+GRANT ALL PRIVILEGES ON  S_T_U2022xxxxx.* TO 'lab'@'localhost';
 
 GRANT CREATE USER ON *.* TO 'lab'@'localhost';
 

@@ -47,7 +47,10 @@ SELECT * FROM S_T_U2022xxxxx.Student;
 DELETE FROM S_T_U2022xxxxx.Student WHERE Sdept = 'IS';
 
 -- 4）查询 CS 系的选课信息
-SELECT * FROM CS_View;
+SELECT Student.Sno, Student.Sname, Course.Cno, Course.Cname 
+FROM SC, Course, Student
+WHERE Student.Sno = SC.Sno AND SC.Cno = SC.Cno
+ORDER BY Student.Sno;
 
 -- (6) 用 U2 登录
 -- 1）在 SC 表中插入 1 条记录（‘200215122’，‘1’，75）

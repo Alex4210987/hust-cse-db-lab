@@ -41,6 +41,12 @@ FROM SC
 JOIN Course C ON SC.Cno = C.Cno
 WHERE SC.Sno = '200215122';
 
+--查询学生 200215122 选修的课程号、课程名及成绩
+SELECT SC.Cno, C.Cname, SC.Grade
+FROM SC
+JOIN Course C ON SC.Cno = C.Cno
+WHERE SC.Sno = '200215122';
+
 -- 找出每个学生低于他所选修课程平均成绩 5 分以上的课程号
 SELECT SC.Sno, SC.Cno
 FROM SC
@@ -61,23 +67,19 @@ FROM Student S
 JOIN SC ON S.Sno = SC.Sno
 WHERE SC.Cno = '2';
 
--- 创建临时表格存放需要更新的学生学号
-CREATE TEMPORARY TABLE TempStudents AS
-SELECT S.Sno
-FROM Student S
-JOIN SC ON S.Sno = SC.Sno
-WHERE SC.Grade BETWEEN 80 AND 89;
-
 -- 使用 update 语句把平均成绩为良的学生的年龄增加 2 岁，并查询出来
-UPDATE Student
-SET Sage = Sage + 2
-WHERE Sno IN (SELECT Sno FROM TempStudents);
-
--- 查询更新后的结果
-SELECT * FROM Student;
-
--- 删除临时表格
-DROP TEMPORARY TABLE IF EXISTS TempStudents;
+-- 更新年龄
+UPDATE Student SET Sage = Sage + 2 WHERE Sno IN (
+    SELECT Sno
+    FROM SC
+    WHERE Grade >= 80
+);
+SELECT * FROM Student 
+WHERE Sno IN (
+    SELECT Sno
+    FROM SC
+    WHERE Grade >= 80
+);
 
 -- 使用 insert 语句增加两门课程：C 语言和人工智能，并查询出来
 -- 插入两门新课程
